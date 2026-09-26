@@ -18,4 +18,9 @@ class Listing extends Model
     {
         return $this->belongsTo(Card::class, 'card_id', 'id');
     }
+    
+    public function tradeOffers()
+    {
+        return $this->hasMany(TradeOffer::class);
+    }
 }
