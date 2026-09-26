@@ -48,4 +48,43 @@ class TradeOfferController extends Controller
 
         return redirect()->route('listings.show', $listing)->with('success', 'Trade offer submitted successfully!');
     }
+
+    public function accept(TradeOffer $tradeOffer)
+    {
+        // Security check: ensure the logged-in user actually owns the target listing
+        if (Auth::id() !== $tradeOffer->listing->user_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Accept the target offer
+        $tradeOffer->update(['status' => 'accepted']);
+
+        // Reject all other pending offers for this specific listing
+        TradeOffer::where('listing_id', $tradeOffer->listing_id)
+            ->where('id', '!=', $tradeOffer->id)
+            ->update(['status' => 'rejected']);
+
+        return back()->with('success', 'Trade offer accepted! All other offers have been declined.');
+    }
+
+    public function reject(TradeOffer $tradeOffer)
+    {
+        if (Auth::id() !== $tradeOffer->listing->user_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $tradeOffer->update(['status' => 'rejected']);
+
+        return back()->with('success', 'Trade offer rejected.');
+    }
+    
+    public function index()
+    {
+        $sentOffers = TradeOffer::with(['listing.card', 'offeredCards'])
+            ->where('sender_id', Auth::id())
+            ->latest()
+            ->get();
+
+        return view('trade-offers.index', compact('sentOffers'));
+    }
 }

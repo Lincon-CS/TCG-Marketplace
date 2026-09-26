@@ -38,7 +38,7 @@
                     </div>
                     <p class="text-sm text-gray-400 mb-6">Listed by: {{ $listing->user->name }}</p>
 
-                    @if(auth()->id() === $listing->user_id)
+                    @if(auth()->id() === $listing->user_id || auth()->user()->is_admin)
                         <div class="flex gap-4 border-t pt-4">
                             <a href="{{ route('listings.edit', $listing) }}" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">Edit Price/Condition</a>
                             
@@ -58,10 +58,19 @@
                                             <p class="font-semibold text-gray-800">From: {{ $offer->sender->name }}</p>
                                             <p class="text-sm text-gray-500">Status: <span class="uppercase font-bold text-yellow-600">{{ $offer->status }}</span></p>
                                         </div>
-                                        <div class="flex gap-2">
-                                            <!-- Accept/Reject buttons will go here later -->
-                                            <button class="bg-blue-600 text-white px-3 py-1 text-sm rounded hover:bg-blue-700">Accept</button>
-                                            <button class="bg-red-600 text-white px-3 py-1 text-sm rounded hover:bg-red-700">Reject</button>
+                                        <div class="flex gap-2 items-center">
+                                            @if($offer->status === 'pending')
+                                                <form action="{{ route('trade-offers.accept', $offer) }}" method="POST">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="bg-blue-600 text-white px-3 py-1 text-sm rounded hover:bg-blue-700">Accept</button>
+                                                </form>
+                                                <form action="{{ route('trade-offers.reject', $offer) }}" method="POST">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="bg-red-600 text-white px-3 py-1 text-sm rounded hover:bg-red-700">Reject</button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </div>
                                     

@@ -18,6 +18,9 @@
                     <x-nav-link :href="route('listings.index')" :active="request()->routeIs('listings.*')">
                         {{ __('Marketplace') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('my-offers.index')" :active="request()->routeIs('my-offers.*')">
+                        {{ __('My Offers') }}
+                    </x-nav-link>
                 </div>
             </div>
 

@@ -22,6 +22,11 @@ Route::middleware('auth')->group(function () {
     // Trade Offer Routes
     Route::get('/listings/{listing}/trade', [App\Http\Controllers\TradeOfferController::class, 'create'])->name('trade-offers.create');
     Route::post('/listings/{listing}/trade', [App\Http\Controllers\TradeOfferController::class, 'store'])->name('trade-offers.store');
+
+    Route::patch('/trade-offers/{tradeOffer}/accept', [App\Http\Controllers\TradeOfferController::class, 'accept'])->name('trade-offers.accept');
+    Route::patch('/trade-offers/{tradeOffer}/reject', [App\Http\Controllers\TradeOfferController::class, 'reject'])->name('trade-offers.reject');
+
+    Route::get('/my-offers', [App\Http\Controllers\TradeOfferController::class, 'index'])->name('my-offers.index');
 });
 
 require __DIR__.'/auth.php';
