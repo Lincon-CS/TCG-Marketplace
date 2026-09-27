@@ -23,4 +23,8 @@ class TradeOffer extends Model
     {
         return $this->belongsToMany(Card::class, 'trade_offer_items', 'trade_offer_id', 'card_id')->withTimestamps();
     }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -7,7 +7,7 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <link rel="icon" type="image/jpeg" href="{{ asset('CMCircleLogo.jpg') }}">
+        <link rel="icon" type="image/png" href="{{ asset('Char.png') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -20,7 +20,7 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
             <div>
                 <a href="/">
-                    <img src="{{ asset('CMCircleLogo.jpg') }}" class="w-24 h-24 rounded-full shadow-md" alt="Collectors Marketplace">
+                    <img src="{{ asset('Char.png') }}" class="w-24 h-24 rounded-full shadow-md" alt="Collectors Marketplace">
                 </a>
             </div>
 

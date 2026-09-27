@@ -59,7 +59,7 @@
                                             <p class="text-sm text-gray-500">Status: <span class="uppercase font-bold text-yellow-600">{{ $offer->status }}</span></p>
                                         </div>
                                         <div class="flex gap-2 items-center">
-                                            @if($offer->status === 'pending')
+                                            @if($offer->status === 'pending' && auth()->id() === $listing->user_id)
                                                 <form action="{{ route('trade-offers.accept', $offer) }}" method="POST">
                                                     @csrf
                                                     @method('PATCH')
@@ -94,14 +94,19 @@
                                 <p class="text-gray-500 text-sm">No trade offers yet.</p>
                             @endforelse
                         </div>
-                    @else
-                        <a href="{{ route('trade-offers.create', $listing) }}" class="block text-center bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 w-full font-bold">
-                            Propose Trade
-                        </a>
+                    @endif
+
+                    <!-- Propose Trade Button (Visible to everyone except the listing owner) -->
+                    @if(auth()->id() !== $listing->user_id)
+                        <div class="mt-6 pt-4 border-t">
+                            <a href="{{ route('trade-offers.create', $listing) }}" class="block text-center bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 w-full font-bold">
+                                Propose Trade
+                            </a>
+                        </div>
                     @endif
                 </div>
             </div>
-
+          </div>
         </div>
     </div>
 </x-app-layout>

@@ -6,7 +6,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <img src="{{ asset('CMLongLogo.png') }}" alt="Collectors Marketplace" class="h-12 w-auto drop-shadow-sm">
+                        <img src="{{ asset('Char.png') }}" alt="Collectors Marketplace" class="h-12 w-auto drop-shadow-sm">
                     </a>
                 </div>
 

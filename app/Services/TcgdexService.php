@@ -42,7 +42,7 @@ class TcgdexService
                 'name' => $data['name'],
                 'set_name' => $data['set']['name'] ?? 'Promo',
                 'rarity' => $data['rarity'] ?? 'Common',
-                'image_url' => isset($data['image']) ? $data['image'] . '/high.png' : null,
+                'image_url' => isset($data['image']) ? $data['image'] . '/low.png' : null,
             ]);
         }
 

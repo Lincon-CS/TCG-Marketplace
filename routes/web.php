@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ListingController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TradeOfferController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -28,12 +29,21 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/my-offers', [App\Http\Controllers\TradeOfferController::class, 'index'])->name('my-offers.index');
 
+    Route::middleware(['auth'])->group(function () {
+    Route::get('/trade-offers', [TradeOfferController::class, 'index'])->name('trade-offers.index');
+    // Add this new route:
+    Route::get('/trade-offers/{tradeOffer}', [TradeOfferController::class, 'show'])->name('trade-offers.show');
+    Route::patch('/trade-offers/{tradeOffer}', [TradeOfferController::class, 'update'])->name('trade-offers.update');
+});
+
     // API Search Route
     Route::get('/api/search-cards', [App\Http\Controllers\ListingController::class, 'searchCards'])->name('cards.search');
 
+
     Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/dashboard', [App\Http\Controllers\ListingController::class, 'adminIndex'])->name('admin.dashboard');
-});
+    Route::get('/admin/dashboard', [App\Http\Controllers\ListingController::class, 'adminIndex'])->name('admin.dashboard'); 
+    
+    });
 });
 
 require __DIR__.'/auth.php';

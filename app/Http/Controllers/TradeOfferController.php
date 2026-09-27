@@ -83,11 +83,52 @@ class TradeOfferController extends Controller
     
     public function index()
     {
-        $sentOffers = TradeOffer::with(['listing.card', 'offeredCards'])
-            ->where('sender_id', Auth::id())
+        $userId = auth()->id();
+
+        // Update the 'with' to include listing.card
+        $sentOffers = \App\Models\TradeOffer::with('listing.card')
+            ->where('sender_id', $userId)
             ->latest()
             ->get();
 
-        return view('trade-offers.index', compact('sentOffers'));
+        $receivedOffers = \App\Models\TradeOffer::with(['sender', 'listing.card'])
+            ->whereHas('listing', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->latest()
+            ->get();
+
+        return view('trade-offers.index', compact('sentOffers', 'receivedOffers'));
+    }
+
+    public function show(\App\Models\TradeOffer $tradeOffer)
+    {
+        if ($tradeOffer->listing->user_id !== auth()->id() && $tradeOffer->sender_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Load the sender, the target listing (and its card), and the offered cards
+        $tradeOffer->load(['sender', 'listing.card', 'offeredCards']);
+
+        return view('trade-offers.show', compact('tradeOffer'));
+    }
+    
+    public function update(\Illuminate\Http\Request $request, \App\Models\TradeOffer $tradeOffer)
+    {
+        // Security check: Only the owner of the listing can accept or reject offers
+        if ($tradeOffer->listing->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:accepted,rejected',
+        ]);
+
+        $tradeOffer->update([
+            'status' => $validated['status']
+        ]);
+
+        return redirect()->route('trade-offers.show', $tradeOffer->id)
+                        ->with('success', 'Offer ' . $validated['status'] . ' successfully.');
     }
 }
