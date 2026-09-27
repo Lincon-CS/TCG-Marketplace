@@ -17,8 +17,8 @@ class TradeOfferController extends Controller
             return redirect()->route('listings.show', $listing)->withErrors('You cannot trade with yourself.');
         }
 
-        // Fetch local cards to populate the trade offer selection
-        $cards = Card::all();
+        // Fetch only the cards associated with the current user's active marketplace listings
+        $cards = Auth::user()->listings()->with('card')->get();
 
         return view('trade-offers.create', compact('listing', 'cards'));
     }
@@ -32,7 +32,7 @@ class TradeOfferController extends Controller
         $validated = $request->validate([
             'message' => 'nullable|string|max:500',
             'offered_cards' => 'required|array|min:1',
-            'offered_cards.*' => 'exists:cards,id',
+            'offered_cards.*' => 'exists:listings,id',
         ]);
 
         // Create the Trade Offer (4th Table)
@@ -43,8 +43,11 @@ class TradeOfferController extends Controller
             'status' => 'pending',
         ]);
 
-        // Attach the cards via the Pivot Table (5th Table / Feature 11)
-        $tradeOffer->offeredCards()->attach($validated['offered_cards']);
+        // Grab the card_id strings from the selected listing IDs
+        $cardIds = Listing::whereIn('id', $validated['offered_cards'])->pluck('card_id');
+
+        // Attach the cards via the Pivot Table
+        $tradeOffer->offeredCards()->attach($cardIds);
 
         return redirect()->route('listings.show', $listing)->with('success', 'Trade offer submitted successfully!');
     }

@@ -27,6 +27,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/trade-offers/{tradeOffer}/reject', [App\Http\Controllers\TradeOfferController::class, 'reject'])->name('trade-offers.reject');
 
     Route::get('/my-offers', [App\Http\Controllers\TradeOfferController::class, 'index'])->name('my-offers.index');
+
+    // API Search Route
+    Route::get('/api/search-cards', [App\Http\Controllers\ListingController::class, 'searchCards'])->name('cards.search');
+
+    Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/dashboard', [App\Http\Controllers\ListingController::class, 'adminIndex'])->name('admin.dashboard');
+});
 });
 
 require __DIR__.'/auth.php';

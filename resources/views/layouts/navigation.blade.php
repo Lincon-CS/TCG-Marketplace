@@ -6,7 +6,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+                        <img src="{{ asset('CMLongLogo.png') }}" alt="Collectors Marketplace" class="h-12 w-auto drop-shadow-sm">
                     </a>
                 </div>
 
@@ -21,6 +21,13 @@
                     <x-nav-link :href="route('my-offers.index')" :active="request()->routeIs('my-offers.*')">
                         {{ __('My Offers') }}
                     </x-nav-link>
+
+                    <!-- Admin Only Link -->
+                    @if(auth()->user()->is_admin)
+                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')" class="text-red-600">
+                            {{ __('Admin') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 

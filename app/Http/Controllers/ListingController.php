@@ -7,12 +7,35 @@ use App\Services\TcgdexService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Http;
 
 class ListingController extends Controller
 {
-    public function index()
+   public function index(Request $request)
     {
-        $listings = Listing::with(['card', 'user'])->latest()->paginate(12);
+        $query = Listing::with(['card', 'user']);
+
+        // Handle Search (Card Name or Code/ID)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('card', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('id', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Handle Sorting
+        $sort = $request->input('sort', 'newest');
+        match ($sort) {
+            'price_asc' => $query->orderBy('price', 'asc'),
+            'price_desc' => $query->orderBy('price', 'desc'),
+            'oldest' => $query->orderBy('created_at', 'asc'),
+            default => $query->orderBy('created_at', 'desc'), // newest
+        };
+
+        // Paginate and retain search/sort parameters in the URL
+        $listings = $query->paginate(12)->withQueryString();
+
         return view('listings.index', compact('listings'));
     }
 
@@ -87,5 +110,39 @@ class ListingController extends Controller
         $listing->delete();
 
         return redirect()->route('listings.index')->with('success', 'Listing removed from the marketplace.');
+    }
+    
+    public function searchCards(Request $request)
+    {
+        $query = $request->input('q');
+        
+        if (strlen($query) < 3) {
+            return response()->json([]);
+        }
+
+        // Cache the result for 24 hours (86400 seconds) to eliminate external API lag
+        $cards = \Illuminate\Support\Facades\Cache::remember('tcg_search_' . strtolower($query), 86400, function () use ($query) {
+            $response = \Illuminate\Support\Facades\Http::get("https://api.tcgdex.net/v2/en/cards", [
+                'name' => 'like:' . $query
+            ]);
+
+            return $response->successful() ? $response->json() : [];
+        });
+
+        // Increased from 10 to 50 results
+        return response()->json(array_slice($cards, 0, 50));
+    }
+
+    public function adminIndex()
+    {
+        $listings = Listing::with(['card', 'user'])->latest()->paginate(20);
+        
+        $stats = [
+            'total_users' => \App\Models\User::count(),
+            'active_listings' => Listing::count(),
+            'successful_trades' => \App\Models\TradeOffer::where('status', 'accepted')->count(),
+        ];
+
+        return view('admin.dashboard', compact('listings', 'stats'));
     }
 }

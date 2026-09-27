@@ -22,9 +22,20 @@
                 <form action="{{ route('listings.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
 
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <label class="block font-medium text-sm text-gray-700">Search Pokémon Name</label>
+                        <input type="text" id="card_search" class="border-gray-300 rounded-md shadow-sm w-full mt-1" placeholder="Type a name (e.g. Charizard)..." autocomplete="off">
+                        
+                        <!-- Dropdown Results Container -->
+                        <div id="search_results" class="absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto hidden">
+                            <!-- JavaScript will inject results here -->
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="block font-medium text-sm text-gray-700">TCGdex Card ID (e.g., swsh3-136)</label>
-                        <input type="text" name="tcgdex_id" value="{{ old('tcgdex_id') }}" class="border-gray-300 rounded-md shadow-sm w-full mt-1" required>
+                        <label class="block font-medium text-sm text-gray-700 mt-4">Card ID (Auto-fills)</label>
+                        <input type="text" id="card_id" name="tcgdex_id" value="{{ old('tcgdex_id') }}" class="border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 w-full mt-1" placeholder="e.g. swsh3-136" required>
                     </div>
 
                     <div>
@@ -58,4 +69,70 @@
             </div>
         </div>
     </div>
+
+    <script>
+        const searchInput = document.getElementById('card_search');
+        const resultsBox = document.getElementById('search_results');
+        const cardIdInput = document.getElementById('card_id');
+        let timeout = null;
+
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            const query = this.value;
+
+            if (query.length < 3) {
+                resultsBox.classList.add('hidden');
+                return;
+            }
+
+            // Wait 500ms after the user stops typing before calling the API
+            timeout = setTimeout(() => {
+                fetch(`/api/search-cards?q=${query}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsBox.innerHTML = '';
+                        
+                        if (data.length === 0) {
+                            resultsBox.innerHTML = '<div class="p-3 text-sm text-gray-500">No cards found.</div>';
+                        } else {
+                            data.forEach(card => {
+                                const div = document.createElement('div');
+                                div.className = 'p-2 border-b hover:bg-gray-100 cursor-pointer flex items-center gap-3';
+                                
+                                // TCGdex provides the base image URL; append /low.png for the thumbnail
+                                const imgHtml = card.image 
+                                    ? `<img src="${card.image}/low.png" class="h-12 w-auto rounded shadow-sm">` 
+                                    : `<div class="h-12 w-9 bg-gray-200 rounded"></div>`;
+
+                                div.innerHTML = `
+                                    ${imgHtml}
+                                    <div>
+                                        <p class="font-bold text-sm text-gray-800">${card.name}</p>
+                                        <p class="text-xs text-gray-500">ID: ${card.id}</p>
+                                    </div>
+                                `;
+                                
+                                // When clicked, populate the inputs and hide the dropdown
+                                div.addEventListener('click', () => {
+                                    cardIdInput.value = card.id;
+                                    searchInput.value = card.name;
+                                    resultsBox.classList.add('hidden');
+                                });
+                                
+                                resultsBox.appendChild(div);
+                            });
+                        }
+                        
+                        resultsBox.classList.remove('hidden');
+                    });
+            }, 500); 
+        });
+
+        // Hide dropdown if user clicks anywhere else on the page
+        document.addEventListener('click', function(event) {
+            if (!searchInput.contains(event.target) && !resultsBox.contains(event.target)) {
+                resultsBox.classList.add('hidden');
+            }
+        });
+    </script>
 </x-app-layout>

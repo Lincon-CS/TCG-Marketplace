@@ -35,23 +35,24 @@
                     <form action="{{ route('trade-offers.store', $listing) }}" method="POST" class="space-y-6">
                         @csrf
 
-                        <div>
-                            <label class="block font-medium text-sm text-gray-700 mb-2">Select Cards to Offer (Select at least 1)</label>
-                            <div class="grid grid-cols-2 gap-4 max-h-64 overflow-y-auto border p-4 rounded-md bg-gray-50">
-                                @forelse($cards as $card)
-                                    <label class="flex items-center space-x-3 bg-white p-2 border rounded shadow-sm cursor-pointer hover:bg-blue-50">
-                                        <input type="checkbox" name="offered_cards[]" value="{{ $card->id }}" class="rounded border-gray-300 text-blue-600 shadow-sm">
-                                        <div class="flex items-center gap-2">
-                                            @if($card->image_url)
-                                                <img src="{{ $card->image_url }}" class="h-10 w-auto rounded" alt="{{ $card->name }}">
-                                            @endif
-                                            <span class="text-sm font-medium text-gray-700">{{ $card->name }}</span>
+                        <div class="grid grid-cols-2 gap-4 max-h-64 overflow-y-auto border p-4 rounded-md bg-gray-50">
+                            @forelse($cards as $listingItem)
+                                <label class="flex items-center space-x-3 bg-white p-2 border rounded shadow-sm cursor-pointer hover:bg-blue-50">
+                                    <!-- Changed name to match your controller validation: offered_cards[] -->
+                                    <input type="checkbox" name="offered_cards[]" value="{{ $listingItem->id }}" class="rounded border-gray-300 text-blue-600 shadow-sm">
+                                    <div class="flex items-center gap-3">
+                                        @if($listingItem->card && $listingItem->card->image_url)
+                                            <img src="{{ $listingItem->card->image_url }}" class="h-12 w-auto rounded" alt="{{ $listingItem->card->name }}">
+                                        @endif
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-700 block">{{ $listingItem->card->name ?? $listingItem->card_id }}</span>
+                                            <span class="text-xs text-gray-500 block">${{ number_format($listingItem->price, 2) }} • {{ $listingItem->condition }}</span>
                                         </div>
-                                    </label>
-                                @empty
-                                    <p class="text-sm text-gray-500 col-span-2">No cards available in the database to offer.</p>
-                                @endforelse
-                            </div>
+                                    </div>
+                                </label>
+                            @empty
+                                <p class="text-sm text-gray-500 col-span-2">You don't have any active marketplace listings to offer in trade yet.</p>
+                            @endforelse
                         </div>
 
                         <div>
